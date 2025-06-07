@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bcrypt Hash & Compare Tool</title>
+    
+    <!-- Load the bcrypt.js library from a CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+    
+    <style>
+        /* --- Modern UI Styling --- */
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --bg-color: #f4f7f9;
+            --border-radius: 8px;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--dark-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            max-width: 650px;
+            width: 100%;
+            margin-top: 5vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--dark-color);
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 2rem;
+        }
+
+        /* --- Tabs --- */
+        .tab-controls {
+            display: flex;
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 25px;
+        }
+
+        .tab-btn {
+            flex: 1; /* MODIFIED: Make buttons take up equal space */
+            text-align: center; /* MODIFIED: Center the text inside the button */
+            padding: 12px 20px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--secondary-color);
+            position: relative;
+            transition: color 0.3s ease;
+            outline: none;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: var(--primary-color);
+            border-radius: 3px 3px 0 0;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tab-panel {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* --- Form Elements --- */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: var(--border-radius);
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", monospace;
+        }
+
+        button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 25px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-primary { background-color: var(--primary-color); }
+        .btn-primary:hover:not(:disabled) { background-color: #0069d9; }
+
+        .btn-secondary { background-color: var(--secondary-color); }
+        .btn-secondary:hover:not(:disabled) { background-color: #5a6268; }
+
+        /* --- Output & Results --- */
+        .output-container {
+            position: relative;
+        }
+        
+        #copyBtn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            color: var(--secondary-color);
+            box-shadow: none;
+        }
+        
+        #copyBtn:hover {
+            color: var(--primary-color);
+            background: rgba(230,230,230,0.9);
+            transform: none; /* Override general button hover */
+        }
+
+        #copyBtn svg {
+            width: 20px;
+            height: 20px;
+            display: block;
+        }
+        
+        .result-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .result-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .result-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Bcrypt Tool</h1>
+        
+        <!-- Tab Controls -->
+        <div class="tab-controls">
+            <button class="tab-btn active" data-tab="generate">Generate Hash</button>
+            <button class="tab-btn" data-tab="compare">Compare Hash</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Generate Panel -->
+            <div id="generate-panel" class="tab-panel">
+                <div class="form-group">
+                    <label for="saltRounds">Salt Rounds (Cost Factor)</label>
+                    <input type="number" id="saltRounds" value="10" min="4" max="15">
+                </div>
+                <div class="form-group">
+                    <label for="plainText">Text to Hash</label>
+                    <input type="text" id="plainText" placeholder="Enter password or string to hash">
+                </div>
+                <button id="generateBtn" class="btn-primary">Generate Hash</button>
+                <div class="form-group" style="margin-top: 25px;">
+                    <label for="hashedOutput">Generated Hash</label>
+                    <div class="output-container">
+                        <textarea id="hashedOutput" readonly placeholder="Your hash will appear here..."></textarea>
+                        <button id="copyBtn" title="Copy to clipboard"></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compare Panel -->
+            <div id="compare-panel" class="tab-panel hidden">
+                <p>Check if a plain-text string matches a given bcrypt hash.</p>
+                <div class="form-group">
+                    <label for="plainTextCompare">Original Plain Text</label>
+                    <input type="text" id="plainTextCompare" placeholder="e.g., password123">
+                </div>
+                <div class="form-group">
+                    <label for="hashCompare">Hash to Compare Against</label>
+                    <input type="text" id="hashCompare" placeholder="e.g., $2a$10$...">
+                </div>
+                <button id="compareBtn" class="btn-secondary">Compare</button>
+                <div id="compareResult" class="result-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Icon SVGs ---
+            const ICONS = {
+                copy: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`,
+                tick: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--success-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>`
+            };
+
+            // --- Element Selectors ---
+            const saltRoundsInput = document.getElementById('saltRounds');
+            const plainTextInput = document.getElementById('plainText');
+            const generateBtn = document.getElementById('generateBtn');
+            const hashedOutput = document.getElementById('hashedOutput');
+            const copyBtn = document.getElementById('copyBtn');
+            
+            const plainTextCompareInput = document.getElementById('plainTextCompare');
+            const hashCompareInput = document.getElementById('hashCompare');
+            const compareBtn = document.getElementById('compareBtn');
+            const compareResult = document.getElementById('compareResult');
+
+            const tabControls = document.querySelector('.tab-controls');
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabPanels = document.querySelectorAll('.tab-panel');
+
+            // --- Initial State ---
+            copyBtn.innerHTML = ICONS.copy;
+
+            // --- Tab Switching Logic ---
+            tabControls.addEventListener('click', (e) => {
+                const clickedTab = e.target.closest('.tab-btn');
+                if (!clickedTab) return;
+
+                // Update button active state
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                clickedTab.classList.add('active');
+
+                // Show/Hide panels
+                const targetPanelId = clickedTab.dataset.tab + '-panel';
+                tabPanels.forEach(panel => {
+                    if (panel.id === targetPanelId) {
+                        panel.classList.remove('hidden');
+                    } else {
+                        panel.classList.add('hidden');
+                    }
+                });
+            });
+            
+            // --- Hashing Logic ---
+            generateBtn.addEventListener('click', () => {
+                const plainText = plainTextInput.value;
+                const saltRounds = parseInt(saltRoundsInput.value, 10);
+
+                if (!plainText) { alert('Please enter a string to hash.'); return; }
+                if (isNaN(saltRounds) || saltRounds < 4 || saltRounds > 15) { alert('Salt rounds must be a number between 4 and 15.'); return; }
+
+                generateBtn.disabled = true;
+                generateBtn.textContent = 'Generating...';
+                hashedOutput.value = 'Working...';
+                
+                setTimeout(() => {
+                    try {
+                        const hash = dcodeIO.bcrypt.hashSync(plainText, saltRounds);
+                        hashedOutput.value = hash;
+                    } catch (error) {
+                        console.error('Hashing error:', error);
+                        hashedOutput.value = `Error: ${error.message}`;
+                    } finally {
+                        generateBtn.disabled = false;
+                        generateBtn.textContent = 'Generate Hash';
+                    }
+                }, 50);
+            });
+
+            // --- Copy Logic ---
+            copyBtn.addEventListener('click', () => {
+                if (!hashedOutput.value || hashedOutput.value.startsWith('Error') || hashedOutput.value.startsWith('Working')) return;
+                
+                navigator.clipboard.writeText(hashedOutput.value).then(() => {
+                    copyBtn.innerHTML = ICONS.tick;
+                    setTimeout(() => { copyBtn.innerHTML = ICONS.copy; }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    alert('Failed to copy hash to clipboard.');
+                });
+            });
+
+            // --- Comparison Logic ---
+            compareBtn.addEventListener('click', () => {
+                const plainText = plainTextCompareInput.value;
+                const hash = hashCompareInput.value;
+
+                if (!plainText || !hash) { alert('Please provide both the original text and the hash.'); return; }
+
+                compareBtn.disabled = true;
+                compareBtn.textContent = 'Comparing...';
+                compareResult.classList.remove('show', 'success', 'error');
+
+                setTimeout(() => {
+                    try {
+                        const match = dcodeIO.bcrypt.compareSync(plainText, hash);
+                        
+                        if (match) {
+                            compareResult.textContent = '✅ Match! The text corresponds to the hash.';
+                            compareResult.className = 'result-message success show';
+                        } else {
+                            compareResult.textContent = '❌ Does Not Match. The text and hash are different.';
+                            compareResult.className = 'result-message error show';
+                        }
+                    } catch (error) {
+                        console.error('Comparison error:', error);
+                        compareResult.textContent = `⚠️ Error: Invalid hash format.`;
+                        compareResult.className = 'result-message error show';
+                    } finally {
+                        compareBtn.disabled = false;
+                        compareBtn.textContent = 'Compare';
+                    }
+                }, 50);
+            });
+        });
+    </script>
+</body>
+</html>
