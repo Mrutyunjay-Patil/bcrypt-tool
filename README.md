@@ -2,6 +2,11 @@
 
 A simple, modern web tool for generating and verifying bcrypt hashes directly in your browser. No backend or server required—everything runs locally using JavaScript and the [`bcrypt.js`](https://github.com/dcodeIO/bcrypt.js) library.
 
+**🌐 Live Website:**  
+[https://mrutyunjay-patil.github.io/bcrypt-tool/](https://mrutyunjay-patil.github.io/bcrypt-tool/)
+
+---
+
 ## Features
 
 - **Generate bcrypt hashes:**  
@@ -13,16 +18,21 @@ A simple, modern web tool for generating and verifying bcrypt hashes directly in
 - **Clipboard support:**  
   Easily copy generated hashes to your clipboard with a single click.
 
+---
+
 ## Demo
 
-Open the `index.html` file in your browser—no installation or dependencies required.
+Open the `index.html` file in your browser or visit the [live site](https://mrutyunjay-patil.github.io/bcrypt-tool/).
 
-![Screenshot of the bcrypt-tool UI](screenshot.png) <!-- Add a screenshot if available -->
+![image1](image1)
+
+---
 
 ## How to Use
 
 1. **Clone or download this repository.**
-2. **Open `index.html` in your web browser.**
+2. **Open `index.html` in your web browser.**  
+   _or simply use the [live version](https://mrutyunjay-patil.github.io/bcrypt-tool/)_
 
 ### Generate Hash
 
@@ -38,15 +48,21 @@ Open the `index.html` file in your browser—no installation or dependencies req
 - Enter the original plain text and the bcrypt hash to compare.
 - Click **Compare** to see if they match.
 
+---
+
 ## Technology
 
 - **HTML, CSS, JavaScript (ES6)**
 - [bcrypt.js](https://github.com/dcodeIO/bcrypt.js) (loaded via CDN)
 
+---
+
 ## Security & Limitations
 
 - **All operations happen locally** in your browser; no data is sent to any server.
 - For real-world password management, always use secure practices and vetted libraries in your production backend.
+
+---
 
 ## License
 
